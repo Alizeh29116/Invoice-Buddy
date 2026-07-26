@@ -247,11 +247,13 @@ function calculate() {
     document.getElementById('taxAmount').textContent = formatCurrency(tax);
     document.getElementById('total').textContent = formatCurrency(total);
 }
-
 function formatCurrency(num) {
     const currency = document.getElementById('currency').value;
     const symbol = currency.includes('PKR') ? '₨' : currency.includes('EUR') ? '€' : '$';
-    return symbol + num.toFixed(2);
+    const number = parseFloat(num) || 0; // <-- YEH LINE IMPORTANT HAI
+    return symbol + number.toFixed(2);
+}
+
 }
 
 document.getElementById('addItemBtn').addEventListener('click', () => {
@@ -297,15 +299,14 @@ document.getElementById('downloadPdfBtn').addEventListener('click', () => {
     doc.text(`Invoice #: ${document.getElementById('invoiceNumber').value}`, 140, 45);
 
     // ITEMS TABLE
-    const tableData = [];
-    document.querySelectorAll('#itemsTableBody tr').forEach(row => {
-        const desc = row.querySelector('.desc').value;
-        const qty = row.querySelector('.qty').value;
-        const rate = row.querySelector('.rate').value;
-        const amount = (qty * rate).toFixed(2);
-        tableData.push([desc, qty, formatCurrency(rate), formatCurrency(amount)]);
-    });
-
+   const tableData = [];
+document.querySelectorAll('#itemsTableBody tr').forEach(row => {
+    const desc = row.querySelector('.desc').value || '';
+    const qty = parseFloat(row.querySelector('.qty').value) || 0; // <-- parseFloat add
+    const rate = parseFloat(row.querySelector('.rate').value) || 0; // <-- parseFloat add
+    const amount = (qty * rate).toFixed(2);
+    tableData.push([desc, qty, formatCurrency(rate), formatCurrency(amount)]);
+});
     doc.autoTable({
         startY: 75,
         head: [['Item', 'Quantity', 'Unit Price', 'Amount']],

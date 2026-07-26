@@ -7,20 +7,63 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script> <!-- TABLE KE LIYE -->
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#4f46e5',
-                        secondary: '#818cf8',
-                        accent: '#fbbf24',
-                        dark: '#1e293b'
-                    }
-                }
-            }
-        }
+       // PDF DOWNLOAD WITH FULL TABLE + BLUE PURPLE
+document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+    try {
+        const doc = new jsPDF();
+        
+        // HEADER GRADIENT EFFECT
+        doc.setFillColor(37, 99, 235); // Blue
+        doc.rect(0, 0, 210, 30, 'F');
+        doc.setFillColor(124, 58, 237); // Purple
+        doc.rect(105, 0, 105, 30, 'F');
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(22);
+        doc.text("INVOICE", 105, 20, {align: "center"});
+        
+        doc.setTextColor(0,0,0);
+        doc.setFontSize(11);
+        doc.text(`From: ${document.getElementById('fromName').value || 'N/A'}`, 14, 45);
+        doc.text(`Email: ${document.getElementById('fromEmail').value || 'N/A'}`, 14, 51);
+        doc.text(`To: ${document.getElementById('toName').value || 'N/A'}`, 14, 61);
+        doc.text(`Email: ${document.getElementById('toEmail').value || 'N/A'}`, 14, 67);
+        doc.text(`Invoice #: ${document.getElementById('invoiceNumber').value}`, 140, 45);
+
+        // ITEMS TABLE
+        const tableData = [];
+        document.querySelectorAll('#itemsTableBody tr').forEach(row => {
+            const desc = row.querySelector('.desc').value || '';
+            const qty = row.querySelector('.qty').value || 0;
+            const rate = row.querySelector('.rate').value || 0;
+            const amount = (qty * rate).toFixed(2);
+            tableData.push([desc, qty, formatCurrency(rate), formatCurrency(amount)]);
+        });
+
+        doc.autoTable({
+            startY: 75,
+            head: [['Item', 'Quantity', 'Unit Price', 'Amount']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: { fillColor: [124, 58, 237] } // PURPLE
+        });
+
+        // TOTALS
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.text(`Subtotal: ${document.getElementById('subtotal').textContent}`, 140, finalY);
+        doc.text(`Tax: ${document.getElementById('taxAmount').textContent}`, 140, finalY + 7);
+        doc.setTextColor(124, 58, 237);
+        doc.setFontSize(14);
+        doc.text(`Total: ${document.getElementById('total').textContent}`, 140, finalY + 15);
+
+        doc.save(`Invoice-${document.getElementById('invoiceNumber').value}.pdf`);
+    } catch (error) {
+        alert("PDF banane mein error aa gayi: " + error.message);
+        console.log(error);
+    }
+});
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
